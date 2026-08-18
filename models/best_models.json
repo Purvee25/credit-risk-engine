@@ -1,0 +1,10 @@
+{
+  "traditional": {
+    "model": "Logistic Regression",
+    "auc_pr": 0.5199
+  },
+  "alternative": {
+    "model": "Logistic Regression",
+    "auc_pr": 0.6679
+  }
+}

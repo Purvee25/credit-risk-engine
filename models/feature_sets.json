@@ -1,0 +1,17 @@
+{
+  "traditional": [
+    "credit_score",
+    "income",
+    "existing_debt",
+    "loan_amount"
+  ],
+  "alternative": [
+    "credit_score",
+    "income",
+    "existing_debt",
+    "loan_amount",
+    "payment_consistency_pct",
+    "income_volatility_score",
+    "debt_trend"
+  ]
+}

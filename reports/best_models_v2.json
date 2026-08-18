@@ -1,0 +1,12 @@
+{
+  "traditional": {
+    "model": "Logistic Regression",
+    "auc_pr": 0.5095,
+    "threshold": 0.2414
+  },
+  "alternative": {
+    "model": "Logistic Regression",
+    "auc_pr": 0.6599,
+    "threshold": 0.2283
+  }
+}

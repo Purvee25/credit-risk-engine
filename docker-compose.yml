@@ -1,0 +1,46 @@
+# Credit Risk Decision Engine — full stack (API + web).
+#   docker compose up --build     ->  http://localhost:8080
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Requests arrive via the nginx proxy on the web container's origin.
+      CR_ALLOWED_ORIGINS: "http://localhost:8080"
+      CR_LOG_LEVEL: "INFO"
+      CR_RATE_LIMIT_PER_MIN: "60"
+      CR_MAX_UPLOAD_BYTES: "2000000"
+      CR_MAX_ROWS: "10000"
+      # Signs session tokens. MUST be overridden with a real secret in deploys;
+      # without it every restart invalidates all sessions.
+      CR_SECRET_KEY: "${CR_SECRET_KEY:-dev-only-change-me}"
+      CR_DATABASE_URL: "sqlite:////data/decisions.db"
+      # Set CR_API_KEY to require an X-API-Key header on scoring routes.
+      # CR_API_KEY: "change-me"
+    expose:
+      - "8000"
+    volumes:
+      # The audit trail and user accounts must outlive the container.
+      - api-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  api-data:

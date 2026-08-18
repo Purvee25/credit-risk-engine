@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Node / web
+web/node_modules/
+web/dist/
+web/.vite/
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Scratch
+*.tmp
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime state (contains user accounts + password hashes)
+data/decisions.db
+
+# Caches
+.pytest_cache/
