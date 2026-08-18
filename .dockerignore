@@ -1,0 +1,26 @@
+# VCS / env
+.git
+.gitignore
+.env
+.venv
+venv/
+
+# Python caches & tests
+__pycache__/
+*.py[cod]
+.pytest_cache/
+tests/
+
+# Frontend (has its own image)
+web/
+
+# Local database / audit trail — never bake into an image
+data/*.db
+
+# Dev-only artifacts
+reports/
+docs/
+notebooks/
+*.log
+.DS_Store
+.claude/
