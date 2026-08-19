@@ -343,3 +343,34 @@ body { overflow-y: auto !important; overflow-x: hidden; }
   .hero-scroll { display: none; }
   .demo-metrics { grid-template-columns: 1fr; }
 }
+
+
+/* Guest entry on the sign-in card. */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 12px;
+  color: rgba(226, 232, 240, 0.45);
+  font-size: 12px;
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(226, 232, 240, 0.15);
+}
+.btn-guest {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  border-radius: 10px;
+  background: transparent;
+  color: #93c5fd;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-guest:hover { background: rgba(96, 165, 250, 0.12); }
+.auth-hint-guest { margin-top: 10px; }

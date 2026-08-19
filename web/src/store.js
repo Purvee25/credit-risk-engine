@@ -70,7 +70,7 @@ export const useStore = create((set, get) => ({
   selectedId: null,
 
   // --- demo auth (no real backend / no credentials stored) ---
-  user: readUser(),
+  user: readUser(),   // guests are deliberately not persisted
   /** Persist an authenticated user locally. */
   _setUser(apiUser) {
     const u = {
@@ -115,6 +115,23 @@ export const useStore = create((set, get) => ({
     setToken(body.token);
     return get()._setUser(body.user);
   },
+  /**
+   * Read-only demo session. Used when no backend is reachable (e.g. the static
+   * GitHub Pages build): the dashboard renders the bundled snapshot, and every
+   * write path is disabled because a guest never holds a token.
+   */
+  enterGuestMode() {
+    const u = {
+      name: "Demo viewer",
+      email: "",
+      role: "Read-only demo",
+      roleKey: "guest",
+    };
+    setToken(null);
+    set({ user: u });
+    return u;
+  },
+
   logout() {
     setToken(null);
     localStorage.removeItem(AUTH_KEY);

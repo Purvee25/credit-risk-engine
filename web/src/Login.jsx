@@ -4,6 +4,7 @@ import { useStore } from "./store.js";
 export default function Login() {
   const register = useStore((s) => s.register);
   const signIn = useStore((s) => s.signIn);
+  const enterGuestMode = useStore((s) => s.enterGuestMode);
 
   const [mode, setMode] = useState("signin");   // "signin" | "signup"
   const [email, setEmail] = useState("");
@@ -91,6 +92,16 @@ export default function Login() {
             onClick={() => swap(isSignup ? "signin" : "signup")}>
             {isSignup ? "Sign in" : "Create one"}
           </button>
+        </p>
+
+        <div className="login-divider"><span>or</span></div>
+
+        <button type="button" className="btn-guest" onClick={enterGuestMode}>
+          View demo (read-only) →
+        </button>
+        <p className="auth-hint auth-hint-guest">
+          Explore the scored demo batch and SHAP explanations without an account.
+          Recording decisions stays disabled.
         </p>
 
         <div className="login-foot">Prototype — not for production lending decisions.</div>
