@@ -1301,6 +1301,12 @@ export default function Dashboard() {
     <div className="app crm">
       <Sidebar section={section} setSection={setSection} />
       <main className="crm-main">
+        {user.roleKey === "guest" && (
+          <div className="guest-banner">
+            Read-only demo — showing a precomputed batch of scores and SHAP
+            explanations. Recording decisions needs the backend running.
+          </div>
+        )}
         {section === "overview" && <OverviewView goTo={setSection} onOpen={setOpenId} />}
         {section === "applicants" && <ApplicantsView onOpen={setOpenId} />}
         {section === "customers" && <CustomersView onOpen={setOpenId} />}

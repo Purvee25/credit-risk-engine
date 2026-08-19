@@ -260,3 +260,16 @@
 .cust-decision { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .cust-decision-meta { font-size: 12.5px; color: var(--muted); }
 @media (max-width: 900px) { .customers-layout, .cust-grid { grid-template-columns: 1fr; } }
+
+
+/* Read-only demo (no backend): explains why write actions are disabled. */
+.guest-banner {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 8px;
+  background: rgba(96, 165, 250, 0.10);
+  color: #bfdbfe;
+  font-size: 13px;
+  line-height: 1.5;
+}
