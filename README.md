@@ -1,5 +1,7 @@
 # Credit Risk Decision Engine
 
+**[▶ Live demo](https://purvee25.github.io/credit-risk-engine/)** — click *Launch demo* → *View demo (read-only)*. Shows a precomputed batch with SHAP explanations; recording decisions needs the backend running locally.
+
 A credit-risk scoring prototype that predicts loan-default risk using **both
 traditional and alternative (behavioral) features**, to explore fairer credit
 access for **thin-file borrowers** — creditworthy people whom a conventional
