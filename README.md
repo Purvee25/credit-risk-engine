@@ -1,5 +1,7 @@
 # Credit Risk Decision Engine
 
+[![CI](https://github.com/Purvee25/credit-risk-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/Purvee25/credit-risk-engine/actions/workflows/ci.yml)
+
 **[▶ Live demo](https://purvee25.github.io/credit-risk-engine/)** — click *Launch demo* → *View demo (read-only)*. Shows a precomputed batch with SHAP explanations; recording decisions needs the backend running locally.
 
 A credit-risk scoring prototype that predicts loan-default risk using **both
