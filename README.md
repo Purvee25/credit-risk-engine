@@ -50,6 +50,35 @@ applicants by design. Full comparison across all 3 models × 2 feature sets is i
 metric here (a "reject everyone" model looks ~78% accurate). AUC-PR (average
 precision) measures how well the model separates defaulters from non-defaulters.
 
+### Two sets of numbers, and which one is live
+
+The repository holds results from **two training pipelines**, and they do not
+agree. That is deliberate, not drift:
+
+| | Pipeline | Artifacts | Headline AUC-PR | Status |
+|---|---|---|---|---|
+| **v1** | `train.py` | `models/*.joblib`, `models/best_models.json`, `models/metrics.csv` | 0.520 → 0.668 | **Production** — what `utils.py` loads, and therefore what `server.py` and `app.py` actually score with |
+| **v2** | `train_cv.py` | `models/v2/*.joblib`, `reports/best_models_v2.json`, `reports/metrics_v2.csv` | 0.510 → 0.660 | **Staged candidate** — not served |
+
+The table at the top of this section, and every number quoted elsewhere in this
+README, is **v1**.
+
+v2 is the methodologically stronger of the two: stratified K-fold CV with
+hyperparameter tuning, an operating threshold tuned on an internal validation
+split, probability calibration, and a final test set left untouched during
+selection. It scores *slightly lower* precisely because of that last point — v1
+selects its best model on the same split it reports, which flatters the result
+by a small margin.
+
+So the honest reading is that **v2's 0.66 is the more trustworthy estimate**,
+and v1's 0.67 is mildly optimistic. v1 remains in production only because
+promoting v2 changes served scores and decision thresholds, which is a
+deliberate cutover rather than a documentation change.
+
+One consequence worth knowing when reading the repo: `evaluate.py` builds its
+figures from **v2**, while `utils.py` scores from **v1**. The figures in
+`reports/figures/` therefore describe the staged model, not the served one.
+
 ---
 
 ## Methodology & dataset (read this)
