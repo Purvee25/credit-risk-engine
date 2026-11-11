@@ -126,32 +126,42 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 
 ```mermaid
 flowchart LR
-    GEN["📂 generate_data.py\n5 000 applicants"]
+    GEN(["🗄️ generate_data.py\n5 000 applicants"])
 
-    subgraph FEATURES["Feature Sets"]
+    subgraph FEATURES["📋 Feature Sets"]
         direction TB
-        TRAD["Traditional\ncredit score · income · debt"]
-        ALT["Behavioral ★\npayment history · stability · debt trend"]
+        TRAD["🏦 Traditional\ncredit score · income · debt"]
+        ALT["⚡ Behavioral ★\npayment history · stability · debt trend"]
     end
 
-    subgraph TRAIN["train.py"]
+    subgraph TRAIN["🤖 train.py — 3 Models"]
         direction TB
         XGB["XGBoost"]
         RF["Random Forest"]
         LR["Logistic Regression"]
     end
 
-    MODELS[("models/\n*.joblib")]
-    UTILS["utils.py\nscore · SHAP · risk band"]
+    MODELS[("💾 models/\n*.joblib")]
+    UTILS(["⚙️ utils.py\nscore · SHAP · risk band"])
 
-    subgraph SURFACES["Interfaces"]
+    subgraph SURFACES["🖥️ Interfaces"]
         direction TB
-        API["server.py\nFastAPI"]
-        STREAM["app.py\nStreamlit"]
-        WEB["web/\nReact + Three.js"]
+        API["🔌 FastAPI\nserver.py"]
+        STREAM["📊 Streamlit\napp.py"]
+        WEB["🌐 React + Three.js\nweb/"]
     end
 
     GEN --> FEATURES --> TRAIN --> MODELS --> UTILS --> SURFACES
+
+    classDef default fill:#1e293b,stroke:#334155,color:#e2e8f0,rx:8
+    classDef highlight fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    classDef storage fill:#1a2e1a,stroke:#22c55e,color:#86efac
+    classDef output fill:#2d1b4e,stroke:#a855f7,color:#d8b4fe
+
+    class GEN,UTILS default
+    class TRAD,ALT,XGB,RF,LR highlight
+    class MODELS storage
+    class API,STREAM,WEB output
 ```
 
 | | Traditional | + Behavioral |
