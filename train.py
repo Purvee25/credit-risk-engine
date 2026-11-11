@@ -59,10 +59,10 @@ FEATURE_SETS = {
 def build_models(y_train):
     """Return dict of name -> unfitted estimator, with imbalance handling."""
     neg, pos = np.bincount(y_train)
-    scale_pos_weight = neg / pos
+    scale_pos_weight = neg / pos  # ~19 for 95:5 imbalance — tells XGBoost defaults are biased
     return {
         "Logistic Regression": Pipeline([
-            ("scaler", StandardScaler()),
+            ("scaler", StandardScaler()),  # scaler inside Pipeline = fitted on train only, no leakage
             ("clf", LogisticRegression(
                 max_iter=2000, class_weight="balanced", C=1.0)),
         ]),
@@ -72,19 +72,20 @@ def build_models(y_train):
         "XGBoost": XGBClassifier(
             n_estimators=400, max_depth=4, learning_rate=0.05,
             subsample=0.9, colsample_bytree=0.9,
-            scale_pos_weight=scale_pos_weight, eval_metric="aucpr",
+            scale_pos_weight=scale_pos_weight,  # handles class imbalance without SMOTE
+            eval_metric="aucpr",  # AUC-PR is the right metric for rare positives
             random_state=42, n_jobs=-1),
     }
 
 
 def evaluate(model, X_test, y_test, threshold=0.5):
-    proba = model.predict_proba(X_test)[:, 1]
+    proba = model.predict_proba(X_test)[:, 1]  # probability of default (class 1)
     pred = (proba >= threshold).astype(int)
     return {
         "precision": precision_score(y_test, pred, zero_division=0),
         "recall": recall_score(y_test, pred, zero_division=0),
         "f1": f1_score(y_test, pred, zero_division=0),
-        "auc_pr": average_precision_score(y_test, proba),
+        "auc_pr": average_precision_score(y_test, proba),  # primary metric — better than ROC for imbalanced data
         "roc_auc": roc_auc_score(y_test, proba),
     }
 
@@ -94,9 +95,9 @@ def main():
     df = pd.read_csv(DATA)
     y = df[TARGET].values
 
-    # One shared split so both feature sets are compared on the same rows.
+    # shared split — both feature sets evaluated on identical rows for fair comparison
     idx_train, idx_test = train_test_split(
-        np.arange(len(df)), test_size=0.25, stratify=y, random_state=42)
+        np.arange(len(df)), test_size=0.25, stratify=y, random_state=42)  # stratify keeps class ratio in both splits
 
     rows = []
     best = {}
@@ -108,15 +109,15 @@ def main():
         models = build_models(y_train)
         best_auc_pr, best_name = -1.0, None
         for model_name, est in models.items():
-            est.fit(X_train, y_train)
-            metrics = evaluate(est, X_test, y_test)
+            est.fit(X_train, y_train)  # fit on train only
+            metrics = evaluate(est, X_test, y_test)  # evaluate on held-out test
             rows.append({"feature_set": set_name, "model": model_name, **metrics})
 
             fname = f"{model_name.replace(' ', '_').lower()}_{set_name}.joblib"
-            joblib.dump(est, os.path.join(MODELS_DIR, fname))
+            joblib.dump(est, os.path.join(MODELS_DIR, fname))  # save fitted pipeline
 
             if metrics["auc_pr"] > best_auc_pr:
-                best_auc_pr, best_name = metrics["auc_pr"], model_name
+                best_auc_pr, best_name = metrics["auc_pr"], model_name  # track best by AUC-PR
 
         best[set_name] = {"model": best_name, "auc_pr": round(best_auc_pr, 4)}
 

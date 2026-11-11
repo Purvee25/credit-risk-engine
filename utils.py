@@ -62,7 +62,7 @@ def load_best_model(feature_set):
 
 
 def risk_category(prob):
-    """Map a default probability to Low / Medium / High."""
+    """Map default probability → Low / Medium / High band."""
     if prob < 0.15:
         return "Low"
     if prob < 0.40:
@@ -71,27 +71,24 @@ def risk_category(prob):
 
 
 def score(df, model, cols):
-    """Return default-probability array (percent 0-100) for df using model."""
-    proba = model.predict_proba(df[cols])[:, 1]
+    """Return default probability as 0–100 score for each applicant."""
+    proba = model.predict_proba(df[cols])[:, 1]  # [:, 1] = probability of class 1 (default)
     return proba * 100.0
 
 
 def validate_columns(df, required):
-    """Return (missing_cols, rows_with_missing_values)."""
+    """Check uploaded CSV has all required feature columns and no missing values."""
     missing = [c for c in required if c not in df.columns]
     present = [c for c in required if c in df.columns]
     n_missing_vals = int(df[present].isna().any(axis=1).sum()) if present else 0
     return missing, n_missing_vals
 
 
-# ---- SHAP -----------------------------------------------------------------
+# ---- SHAP — per-applicant explanation of WHY a risk score was given --------
 def build_explainer(model, background_df, cols):
-    """
-    Build a SHAP explainer appropriate to the model type.
-
-    LinearExplainer for linear pipelines (fast, exact), TreeExplainer for tree
-    ensembles. Falls back to the model-agnostic Explainer otherwise. Returns a
-    callable(X_df) -> (shap_values_2d, base_value).
+    """Build a SHAP explainer for the model type.
+    TreeExplainer for RF/XGBoost (fast), model-agnostic for linear pipeline.
+    Returns callable(X_df) -> (shap_values, base_value) in probability space.
     """
     import shap
 
@@ -101,11 +98,11 @@ def build_explainer(model, background_df, cols):
         "RandomForestClassifier", "XGBClassifier"}
 
     if is_tree:
-        explainer = shap.TreeExplainer(model)
+        explainer = shap.TreeExplainer(model)  # exact, efficient for tree models
 
         def explain(X_df):
             vals = explainer.shap_values(X_df[cols])
-            # Binary classifiers may return a list [neg, pos]; take positive.
+            # binary classifier returns [neg_class, pos_class]; take positive (default) class
             if isinstance(vals, list):
                 vals = vals[1]
             vals = np.asarray(vals)
@@ -117,8 +114,8 @@ def build_explainer(model, background_df, cols):
 
         return explain
 
-    # Model-agnostic path (used for the linear pipeline too). Explains in
-    # PROBABILITY space, so SHAP contributions read directly as "+/- risk %".
+    # model-agnostic path for Logistic Regression pipeline
+    # explains in probability space → SHAP value reads as "+5% default risk"
     bg_sample = bg.sample(min(100, len(bg)), random_state=0)
 
     def f(X):
