@@ -125,16 +125,34 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 ## Architecture
 
 ```mermaid
-flowchart LR
-    A["🗂️ Applicant Data\n5 000 loan applicants\ncredit score · income · debt\n+ payment history · stability"] -->
-    B["🤖 ML Models\nTrain on both\ntraditional AND\nbehavioral data"] -->
-    C["📊 Risk Score\nProbability of default\nApprove / Review / Reject"] -->
-    D["💡 Explanation\nWHY this score?\nTop factors per applicant"]
+flowchart TD
+    subgraph INPUT["📋 Applicant Profile"]
+        T["Traditional\ncredit score · income\nexisting debt · loan amount"]
+        B["Behavioral  ★\npayment consistency\nincome stability · debt trend"]
+    end
 
-    B --> E["📈 Comparison\nTraditional alone → 52% accurate\nWith behavioral data → 67% accurate\n+15% lift for thin-file borrowers"]
+    subgraph TRAIN["🤖 Model Training  —  train.py"]
+        direction LR
+        M1["XGBoost"]
+        M2["Random Forest"]
+        M3["Logistic Regression"]
+    end
+
+    subgraph RESULT["📊 Output"]
+        SCORE["Default Probability\nApprove · Review · Reject"]
+        SHAP["SHAP Explanation\nWhy this score?\nper-feature contribution"]
+        FLIP["Decision Flip  ★\nrejected by traditional\napproved by behavioral"]
+    end
+
+    INPUT --> TRAIN
+    TRAIN --> RESULT
+
+    NOTE["Traditional only  →  AUC-PR 0.52\n＋ Behavioral data  →  AUC-PR 0.67  ✦ +28% lift\nThin-file borrowers benefit most"]
+
+    RESULT --> NOTE
 ```
 
-**In plain English:** Feed in a loan applicant's details → the model predicts how likely they are to default → it shows *why* (which factors drove the score) → loan officers can approve, reject, or override with a reason logged.
+**The thesis:** Tens of millions of people are *thin-file* — no credit history, so a conventional score rejects them. Adding behavioral signals (payment history, income stability, debt trend) lifts model accuracy by **28%** and approves creditworthy people a traditional score would miss.
 
 ---
 
