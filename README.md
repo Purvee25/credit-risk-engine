@@ -126,22 +126,15 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 
 ```mermaid
 flowchart LR
-    GEN["① Make Data\ngenerate_data.py\n5 000 applicants"] -->
-    TRAIN["② Train Models\ntrain.py\nXGBoost · RF · LR\n2 feature sets"] -->
-    MODELS["③ Save Models\nmodels/*.joblib\nmetrics.csv"] -->
-    UTILS["④ Score + SHAP\nutils.py\ndefault probability\nper-feature reason"] -->
-    OUT["⑤ Show Result\nStreamlit app\nReact 3D app\nFastAPI backend"]
+    A["🗂️ Applicant Data\n5 000 loan applicants\ncredit score · income · debt\n+ payment history · stability"] -->
+    B["🤖 ML Models\nTrain on both\ntraditional AND\nbehavioral data"] -->
+    C["📊 Risk Score\nProbability of default\nApprove / Review / Reject"] -->
+    D["💡 Explanation\nWHY this score?\nTop factors per applicant"]
+
+    B --> E["📈 Comparison\nTraditional alone → 52% accurate\nWith behavioral data → 67% accurate\n+15% lift for thin-file borrowers"]
 ```
 
-**The core idea — two feature sets:**
-- **Traditional only** (credit score, income, debt) → AUC-PR **0.52**
-- **+ Behavioral** (payment history, income stability, debt trend) → AUC-PR **0.67 ★**
-- Thin-file borrowers (no credit history) benefit most — that's the financial-inclusion thesis.
-
-**Key design decisions:**
-- `utils.py` is the single source of truth for scoring and SHAP — both `server.py` and `app.py` import it.
-- `scale_pos_weight ≈ 19` handles the 95:5 class imbalance; AUC-PR (not accuracy) is the right metric.
-- Auth tokens carry the user's role baked in at login — role is never taken from a request body.
+**In plain English:** Feed in a loan applicant's details → the model predicts how likely they are to default → it shows *why* (which factors drove the score) → loan officers can approve, reject, or override with a reason logged.
 
 ---
 
