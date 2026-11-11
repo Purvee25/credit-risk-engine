@@ -40,7 +40,8 @@ def generate(n: int = N, seed: int = 42) -> pd.DataFrame:
     # Employment length in years (thin-file <=> short tenure / young file).
     employment_length = np.clip(rng.gamma(shape=2.0, scale=2.6, size=n), 0, 40)
 
-    # "Thin file" strength: 1 = essentially no history, 0 = long history.
+    # "Thin file" strength: 1 = essentially no history, 0 = long history
+    # thin-file borrowers are the target demographic — this is the financial-inclusion story
     thinness = np.clip(1.0 - employment_length / 12.0, 0.0, 1.0)
 
     # Loan amount scales loosely with income plus noise.
@@ -77,7 +78,7 @@ def generate(n: int = N, seed: int = 42) -> pd.DataFrame:
         + 0.75 * z_vol         # volatile income raises risk
         + 0.80 * debt_trend    # rising debt raises risk
     )
-    behavioral_gain = 0.6 + 1.4 * thinness  # 0.6 (rich file) .. 2.0 (thin file)
+    behavioral_gain = 0.6 + 1.4 * thinness  # behavioral signal matters MORE for thin-file borrowers
 
     logit = (
         -2.35                      # base rate -> ~ realistic default prevalence

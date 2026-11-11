@@ -49,9 +49,9 @@ def main():
 
     bundle, meta = _load("alternative")
     model, thr, cols = bundle["model"], bundle["threshold"], bundle["columns"]
-    Xte, yte = df[cols].iloc[idx_test], y[idx_test]
-    proba = model.predict_proba(Xte)[:, 1]
-    pred = (proba >= thr).astype(int)
+    Xte, yte = df[cols].iloc[idx_test], y[idx_test]  # test set only — model never saw this data
+    proba = model.predict_proba(Xte)[:, 1]            # probability of default (class 1)
+    pred = (proba >= thr).astype(int)                 # apply threshold tuned on validation set
 
     def save(fig, name):
         fig.tight_layout()

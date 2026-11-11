@@ -42,12 +42,12 @@ def _b64d(s: str) -> bytes:
 
 
 def issue_token(user: dict) -> str:
-    """Mint a signed session token for an authenticated user."""
+    """Mint a signed session token: base64(payload).HMAC-SHA256 — role comes from DB, not caller."""
     payload = {
         "uid": user["id"],
         "email": user["email"],
         "name": user.get("name", ""),
-        "role": user.get("role", "analyst"),
+        "role": user.get("role", "analyst"),  # role baked into token at login; can't be self-elevated
         "exp": int(time.time()) + TOKEN_TTL_SECONDS,
     }
     body = _b64e(json.dumps(payload, separators=(",", ":")).encode())
@@ -60,7 +60,7 @@ def verify_token(token: str) -> dict | None:
     try:
         body, sig = token.split(".")
         expected = hmac.new(SECRET.encode(), body.encode(), hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(sig, expected):      # constant-time
+        if not hmac.compare_digest(sig, expected):  # constant-time compare prevents timing attacks
             return None
         payload = json.loads(_b64d(body))
         if payload.get("exp", 0) < time.time():

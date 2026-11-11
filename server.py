@@ -36,11 +36,11 @@ logging.basicConfig(
 logger = logging.getLogger("credit_risk.api")
 
 # --- Config (all via env; safe local defaults) ------------------------------ #
-MAX_UPLOAD_BYTES = int(os.getenv("CR_MAX_UPLOAD_BYTES", 2_000_000))  # 2 MB
-MAX_ROWS = int(os.getenv("CR_MAX_ROWS", 10_000))
-RATE_LIMIT = int(os.getenv("CR_RATE_LIMIT_PER_MIN", 60))  # requests/min/IP
-DEFAULT_THRESHOLD = float(os.getenv("CR_DEFAULT_THRESHOLD", 25))  # approve-below %
-API_KEY = os.getenv("CR_API_KEY")  # if unset, auth is disabled (dev default)
+MAX_UPLOAD_BYTES = int(os.getenv("CR_MAX_UPLOAD_BYTES", 2_000_000))  # 2 MB upload cap
+MAX_ROWS = int(os.getenv("CR_MAX_ROWS", 10_000))                      # row cap protects memory
+RATE_LIMIT = int(os.getenv("CR_RATE_LIMIT_PER_MIN", 60))              # per-IP sliding window
+DEFAULT_THRESHOLD = float(os.getenv("CR_DEFAULT_THRESHOLD", 25))      # approve if default prob < 25%
+API_KEY = os.getenv("CR_API_KEY")  # unset = auth disabled (dev); set in prod
 
 app = FastAPI(title="Credit Risk Decision Engine API", version="1.0.0")
 
@@ -89,7 +89,7 @@ async def rate_limit(request: Request, call_next):
     now = time.monotonic()
     window = _hits[ip]
     while window and now - window[0] > 60:
-        window.popleft()
+        window.popleft()  # drop hits older than 60s — sliding window
     if len(window) >= RATE_LIMIT:
         logger.warning("Rate limit exceeded for %s", ip)
         from fastapi.responses import JSONResponse
