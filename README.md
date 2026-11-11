@@ -126,7 +126,7 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 
 ```mermaid
 flowchart LR
-    GEN(["🗄️ generate_data.py\n5 000 applicants"])
+    GEN(["📝 Loan Application\nincome · debt · credit score\npayment history · stability"])
 
     subgraph FEATURES["📋 Feature Sets"]
         direction TB
