@@ -122,6 +122,38 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart TD
+    GEN["generate_data.py\n5 000 synthetic applicants\n(latent-risk design)"]
+    TRAIN["train.py\n3 models × 2 feature sets\nXGBoost · RF · LR\nscale_pos_weight · AUC-PR"]
+    MODELS[("models/\n*.joblib\nmetrics.csv\nbest_models.json")]
+    UTILS["utils.py\nload_model() · score()\nbuild_explainer() SHAP\nsingle source of truth"]
+    SERVER["server.py\nFastAPI\nlive scoring + SHAP\nauth · rate-limit"]
+    APP["app.py\nStreamlit\n6 tabs: score / compare\n/ SHAP / override"]
+    AUTH["auth.py\nHMAC-SHA256 token\nrole baked in at login\nnever from request body"]
+    REACT["React + Three.js\nweb/\n3D visualisation\nfalls back to data.json"]
+    SHAP["SHAP Explanations\nTreeExplainer (RF/XGBoost)\nmodel-agnostic (LR)\nprobability space"]
+
+    GEN --> TRAIN
+    TRAIN --> MODELS
+    MODELS --> UTILS
+    UTILS --> SERVER
+    UTILS --> APP
+    SERVER --> AUTH
+    SERVER --> REACT
+    UTILS --> SHAP
+```
+
+**Key design decisions:**
+- `utils.py` is the **single source of truth** for scoring and SHAP — `server.py` and `app.py` both import it, never duplicate logic.
+- `scale_pos_weight = neg/pos (~19)` handles the 95:5 class imbalance; `eval_metric="aucpr"` measures it honestly.
+- Behavioral features (payment consistency, income volatility, debt trend) lift AUC-PR **0.52 → 0.67** — the thesis result.
+- Auth tokens carry the user's role; the role is never accepted from a request body (maker-checker workflow).
+
+---
+
 ## Project layout
 
 ```
