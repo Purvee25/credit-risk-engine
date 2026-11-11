@@ -146,9 +146,9 @@ flowchart LR
 
     subgraph SURFACES["🖥️ Interfaces"]
         direction TB
-        API["🔌 FastAPI\nserver.py"]
-        STREAM["📊 Streamlit\napp.py"]
-        WEB["🌐 React + Three.js\nweb/"]
+        API["🔌 REST API\nserver.py"]
+        STREAM["📊 Analyst Dashboard\napp.py"]
+        WEB["🌐 3D Web App\nweb/"]
     end
 
     GEN --> FEATURES --> TRAIN --> MODELS --> UTILS --> SURFACES
