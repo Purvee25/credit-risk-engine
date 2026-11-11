@@ -141,8 +141,8 @@ flowchart LR
         LR["Logistic Regression"]
     end
 
-    MODELS[("💾 models/\n*.joblib")]
-    UTILS(["⚙️ utils.py\nscore · SHAP · risk band"])
+    MODELS[("💾 Trained Models\n*.joblib")]
+    UTILS(["⚙️ Scoring Engine\nscore · SHAP · risk band"])
 
     subgraph SURFACES["🖥️ Interfaces"]
         direction TB
