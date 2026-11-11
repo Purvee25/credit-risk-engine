@@ -125,17 +125,17 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 ## Architecture
 
 ```mermaid
-flowchart TD
+flowchart LR
     GEN["📂 generate_data.py\n5 000 applicants"]
 
     subgraph FEATURES["Feature Sets"]
-        direction LR
+        direction TB
         TRAD["Traditional\ncredit score · income · debt"]
         ALT["Behavioral ★\npayment history · stability · debt trend"]
     end
 
     subgraph TRAIN["train.py"]
-        direction LR
+        direction TB
         XGB["XGBoost"]
         RF["Random Forest"]
         LR["Logistic Regression"]
@@ -145,17 +145,13 @@ flowchart TD
     UTILS["utils.py\nscore · SHAP · risk band"]
 
     subgraph SURFACES["Interfaces"]
-        direction LR
+        direction TB
         API["server.py\nFastAPI"]
         STREAM["app.py\nStreamlit"]
         WEB["web/\nReact + Three.js"]
     end
 
-    GEN --> FEATURES
-    FEATURES --> TRAIN
-    TRAIN --> MODELS
-    MODELS --> UTILS
-    UTILS --> SURFACES
+    GEN --> FEATURES --> TRAIN --> MODELS --> UTILS --> SURFACES
 ```
 
 | | Traditional | + Behavioral |
