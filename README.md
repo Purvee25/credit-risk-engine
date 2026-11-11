@@ -126,33 +126,43 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 
 ```mermaid
 flowchart TD
-    subgraph INPUT["📋 Applicant Profile"]
-        T["Traditional\ncredit score · income\nexisting debt · loan amount"]
-        B["Behavioral  ★\npayment consistency\nincome stability · debt trend"]
-    end
+    GEN["generate_data.py\n─────────────────\n5 000 synthetic applicants\nlatent true-risk design\nthin-file amplification"]
 
-    subgraph TRAIN["🤖 Model Training  —  train.py"]
+    subgraph FEATURES["Two Feature Sets"]
         direction LR
-        M1["XGBoost"]
-        M2["Random Forest"]
-        M3["Logistic Regression"]
+        TRAD["Traditional\ncredit_score · income\nexisting_debt · loan_amount"]
+        ALT["＋ Behavioral ★\npayment_consistency_pct\nincome_volatility_score\ndebt_trend"]
     end
 
-    subgraph RESULT["📊 Output"]
-        SCORE["Default Probability\nApprove · Review · Reject"]
-        SHAP["SHAP Explanation\nWhy this score?\nper-feature contribution"]
-        FLIP["Decision Flip  ★\nrejected by traditional\napproved by behavioral"]
+    subgraph TRAIN["train.py  —  3 models × 2 feature sets"]
+        direction LR
+        XGB["XGBoost\nscale_pos_weight≈19\neval_metric=aucpr"]
+        RF["Random Forest\nclass_weight=balanced"]
+        LR["Logistic Regression\nStandardScaler Pipeline"]
     end
 
-    INPUT --> TRAIN
-    TRAIN --> RESULT
+    MODELS[("models/\n*.joblib · metrics.csv\nbest_models.json")]
 
-    NOTE["Traditional only  →  AUC-PR 0.52\n＋ Behavioral data  →  AUC-PR 0.67  ✦ +28% lift\nThin-file borrowers benefit most"]
+    UTILS["utils.py  —  single source of truth\n─────────────────────────────\nload_model()  ·  score()  →  default probability\nbuild_explainer()  →  SHAP contributions\nrisk_category()  →  Approve / Review / Reject"]
 
-    RESULT --> NOTE
+    subgraph SURFACES["Three Surfaces"]
+        direction LR
+        API["server.py\nFastAPI\nlive scoring · CSV upload\nauth · rate-limit\ndecision audit DB"]
+        STREAM["app.py\nStreamlit\n6 tabs: batch · SHAP\ndecision flip · fairness"]
+        WEB["export_web_data.py\n→ web/public/data.json\nReact + Three.js\n3D visualisation"]
+    end
+
+    AUTH["auth.py\nHMAC-SHA256 token\nrole baked in at login\nnever from request body"]
+
+    GEN --> FEATURES
+    FEATURES --> TRAIN
+    TRAIN --> MODELS
+    MODELS --> UTILS
+    UTILS --> SURFACES
+    API --> AUTH
 ```
 
-**The thesis:** Tens of millions of people are *thin-file* — no credit history, so a conventional score rejects them. Adding behavioral signals (payment history, income stability, debt trend) lifts model accuracy by **28%** and approves creditworthy people a traditional score would miss.
+**Key result:** Traditional features → AUC-PR **0.52** · With behavioral features → AUC-PR **0.67** (+28% lift). Improvement is largest for thin-file borrowers — the financial-inclusion thesis.
 
 ---
 
