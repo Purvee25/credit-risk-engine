@@ -126,43 +126,44 @@ payment_consistency_pct, income_volatility_score, debt_trend, default`.
 
 ```mermaid
 flowchart TD
-    GEN["generate_data.py\n─────────────────\n5 000 synthetic applicants\nlatent true-risk design\nthin-file amplification"]
+    GEN["📂 generate_data.py\n5 000 applicants"]
 
-    subgraph FEATURES["Two Feature Sets"]
+    subgraph FEATURES["Feature Sets"]
         direction LR
-        TRAD["Traditional\ncredit_score · income\nexisting_debt · loan_amount"]
-        ALT["＋ Behavioral ★\npayment_consistency_pct\nincome_volatility_score\ndebt_trend"]
+        TRAD["Traditional\ncredit score · income · debt"]
+        ALT["Behavioral ★\npayment history · stability · debt trend"]
     end
 
-    subgraph TRAIN["train.py  —  3 models × 2 feature sets"]
+    subgraph TRAIN["train.py"]
         direction LR
-        XGB["XGBoost\nscale_pos_weight≈19\neval_metric=aucpr"]
-        RF["Random Forest\nclass_weight=balanced"]
-        LR["Logistic Regression\nStandardScaler Pipeline"]
+        XGB["XGBoost"]
+        RF["Random Forest"]
+        LR["Logistic Regression"]
     end
 
-    MODELS[("models/\n*.joblib · metrics.csv\nbest_models.json")]
+    MODELS[("models/\n*.joblib")]
+    UTILS["utils.py\nscore · SHAP · risk band"]
 
-    UTILS["utils.py  —  single source of truth\n─────────────────────────────\nload_model()  ·  score()  →  default probability\nbuild_explainer()  →  SHAP contributions\nrisk_category()  →  Approve / Review / Reject"]
-
-    subgraph SURFACES["Three Surfaces"]
+    subgraph SURFACES["Interfaces"]
         direction LR
-        API["server.py\nFastAPI\nlive scoring · CSV upload\nauth · rate-limit\ndecision audit DB"]
-        STREAM["app.py\nStreamlit\n6 tabs: batch · SHAP\ndecision flip · fairness"]
-        WEB["export_web_data.py\n→ web/public/data.json\nReact + Three.js\n3D visualisation"]
+        API["server.py\nFastAPI"]
+        STREAM["app.py\nStreamlit"]
+        WEB["web/\nReact + Three.js"]
     end
-
-    AUTH["auth.py\nHMAC-SHA256 token\nrole baked in at login\nnever from request body"]
 
     GEN --> FEATURES
     FEATURES --> TRAIN
     TRAIN --> MODELS
     MODELS --> UTILS
     UTILS --> SURFACES
-    API --> AUTH
 ```
 
-**Key result:** Traditional features → AUC-PR **0.52** · With behavioral features → AUC-PR **0.67** (+28% lift). Improvement is largest for thin-file borrowers — the financial-inclusion thesis.
+| | Traditional | + Behavioral |
+|---|---|---|
+| AUC-PR | 0.52 | **0.67** ★ |
+| Recall | 0.69 | **0.82** |
+
+Behavioral signals help most for **thin-file borrowers** — people with little credit history whom a conventional score would reject.
 
 ---
 
